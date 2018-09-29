@@ -3,7 +3,7 @@
 ### example
 - node
 ```
-var AtomParser = require('atom.parser.js');
+var AtomParser = require('atom-parser-js');
 var res = new AtomParser({ "url": 'something' });
 
 res.on('response', (res) => {
@@ -24,7 +24,7 @@ res.on('error', (err) => {
 </head>
 
 <body>
-    <script type="text/javascript" src="../browserify/bundle.js"></script>
+    <script type="text/javascript" src="https://github.com/keicoon/atom-parser-js/blob/master/browserify/bundle.js"></script>
     <script>
         var res = new AtomParser({ "url": 'something', "proxy": true });
         
