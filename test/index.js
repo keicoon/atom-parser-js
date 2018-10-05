@@ -1,6 +1,7 @@
 
 var AtomParser = require('../src');
-var res = new AtomParser({ "url": 'https://ltn.hitomi.la/artist/mizuryu%20kei-korean.atom' });
+// options: {proxy, xml}
+var res = new AtomParser({ "proxy": true, "url": 'https://ltn.hitomi.la/artist/mizuryu%20kei-korean.atom' });
 
 res.on('response', (res) => {
     console.log(res);

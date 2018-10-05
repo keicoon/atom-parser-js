@@ -1,6 +1,6 @@
 {
   "name": "atom-parser-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "src",
   "repository": {
     "type": "git",
@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "feedparser": "^2.2.9",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "browserify": "^16.2.3",

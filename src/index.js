@@ -1,5 +1,3 @@
-var FeedParser = require('feedparser');
-
 module.exports = class AtomParser {
     constructor(options = {}) {
         if (options.url) {
@@ -8,14 +6,16 @@ module.exports = class AtomParser {
             this.items = new Array();
             this.events = new Object();
 
-            this.feedparser = new FeedParser();
+            this.setup_feedparser();
 
-            if (options.proxy && options.url) {
-                this.parsing_proxy_url(options.url);
-            } else if (options.xml && options.url) {
-                this.parsing_xml_url(options.url);
-            } else if (options.content) {
-                this.parsing_url(options.url);
+            if (options.url) {
+                if (options.proxy) {
+                    this.parsing_proxy_url(options.url);
+                } else if (options.xml) {
+                    this.parsing_xml_url(options.url);
+                } else {
+                    this.parsing_url(options.url);
+                }
             }
         } else {
             this.call('error', 'error about options');
@@ -38,6 +38,23 @@ module.exports = class AtomParser {
         if (this.events[event]) {
             this.events[event](params);
         }
+    }
+
+    setup_feedparser() {
+        var FeedParser = require('feedparser');
+        this.feedparser = new FeedParser();
+        this.feedparser.on('error', function (error) {
+            this.call('error', error);
+        }.bind(this));
+
+        this.feedparser.on('readable', function () {
+            var stream = this.feedparser;
+            var item;
+            while (item = stream.read()) {
+                this.add(item);
+            }
+            this.call('response', this.items);
+        }.bind(this));
     }
 
     parsing_proxy_url(url) {
@@ -63,29 +80,10 @@ module.exports = class AtomParser {
                 stream.pipe(this.feedparser);
             }
         }.bind(this));
-
-        req.on('end', function () {
-            this.call('response', this.items);
-        }.bind(this));
-
-
-        this.feedparser.on('error', function (error) {
-            this.call('error', error);
-        }.bind(this));
-
-        this.feedparser.on('readable', function () {
-            // This is where the action is!
-            var stream = this.feedparser; // `this` is `feedparser`, which is a stream
-            // var meta = this.meta; // **NOTE** the "meta" is always available in the context of the feedparser instance
-            var item;
-
-            while (item = stream.read()) {
-                this.add(item);
-            }
-        }.bind(this));
     }
 
     parsing_xml_url(url) {
+        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function () {
@@ -95,21 +93,9 @@ module.exports = class AtomParser {
                 var s = new Readable
                 s.push(body);
                 s.push(null);
-
-                s.on('error', function (error) {
-                    this.call('error', error);
-                }.bind(this))
-                    .pipe(new FeedParser())
-                    .on('readable', function () {
-                        var stream = this, item;
-                        while (item = stream.read()) {
-                            this.add(item);
-                        }
-
-                        this.call('response', this.items);
-                    }.bind(this));
+                s.pipe(this.feedparser);
             }
-        }
+        }.bind(this);
         xhr.send();
     }
 }

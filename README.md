@@ -1,6 +1,6 @@
 ### atom.parser.js
 
-### example
+### Example
 - node
 ```
 var AtomParser = require('atom-parser-js');
@@ -39,3 +39,10 @@ res.on('error', (err) => {
 
 </html>
 ```
+
+### Updates
+- 1.1
+    - add 'XMLHttpRequest'
+- 1.0
+    - add 'proxy'
+    - add 'request'
