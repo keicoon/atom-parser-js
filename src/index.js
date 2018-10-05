@@ -2,8 +2,9 @@ var FeedParser = require('feedparser');
 
 module.exports = class AtomParser {
     constructor(options = {}) {
-        if (options.url || options.content) {
+        if (options.url) {
             options.proxy = options.proxy || false;
+            options.xml = options.xml || false;
             this.items = new Array();
             this.events = new Object();
 
@@ -11,10 +12,10 @@ module.exports = class AtomParser {
 
             if (options.proxy && options.url) {
                 this.parsing_proxy_url(options.url);
-            } else if (options.url) {
-                this.parsing_url(options.url);
+            } else if (options.xml && options.url) {
+                this.parsing_xml_url(options.url);
             } else if (options.content) {
-                this.parsing_content(options.content);
+                this.parsing_url(options.url);
             }
         } else {
             this.call('error', 'error about options');
@@ -83,6 +84,32 @@ module.exports = class AtomParser {
             }
         }.bind(this));
     }
-    // @TODO:
-    parsing_content(text) { }
+
+    parsing_xml_url(url) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                var body = xhr.responseText;
+                var Readable = require('stream').Readable
+                var s = new Readable
+                s.push(body);
+                s.push(null);
+
+                s.on('error', function (error) {
+                    this.call('error', error);
+                }.bind(this))
+                    .pipe(new FeedParser())
+                    .on('readable', function () {
+                        var stream = this, item;
+                        while (item = stream.read()) {
+                            this.add(item);
+                        }
+
+                        this.call('response', this.items);
+                    }.bind(this));
+            }
+        }
+        xhr.send();
+    }
 }
