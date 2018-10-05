@@ -53,8 +53,11 @@ module.exports = class AtomParser {
             while (item = stream.read()) {
                 this.add(item);
             }
-            this.call('response', this.items);
         }.bind(this));
+
+        this.feedparser.on('end', function () {
+            this.call('response', this.items);
+        }.bind(this));``
     }
 
     parsing_proxy_url(url) {
@@ -96,6 +99,7 @@ module.exports = class AtomParser {
                 s.pipe(this.feedparser);
             }
         }.bind(this);
+
         xhr.send();
     }
 }
